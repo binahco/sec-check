@@ -10,11 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: core en path editable (mismo layout local)
-        uses: actions/checkout@v4
-        with:
-          repository: binahco/llm-dev-core
-          ref: v0.6.0
-          path: ../llm-dev-core
+        run: git clone --quiet --depth 1 --branch v0.6.0 https://github.com/binahco/llm-dev-core.git ../llm-dev-core
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --frozen
       - name: evals en verde (replay determinista, sin LLM — D4)
