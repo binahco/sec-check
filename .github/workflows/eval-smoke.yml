@@ -9,6 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: core en path editable (mismo layout local)
+        uses: actions/checkout@v4
+        with:
+          repository: binahco/llm-dev-core
+          ref: v0.6.0
+          path: ../llm-dev-core
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --frozen
       - name: evals en verde (replay determinista, sin LLM — D4)
