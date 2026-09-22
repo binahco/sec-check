@@ -60,7 +60,7 @@ proceso aborta **antes** de formar un prompt. Nada crudo cruza el límite.
 
 ## Roadmap
 
-- [ ] Evaluación `eval-smoke` con el dataset de `evals/` (sem. 5, test-kit)
+- [x] Evaluación `eval-smoke` con el dataset de `evals/` (sem. 5, test-kit; 3 casos congelados en el retrofit #0 de la sem. 6)
 - [ ] Lint anti-secretos en CI para cualquier consumidor (`ci-pack`, sem. 7)
 - [ ] Detector por hook de git (`pre-commit`) para bloquear antes del commit
 - [ ] `--max-ratio` para fallar si un diff es mayoría de secretos (Delta a priorizar)

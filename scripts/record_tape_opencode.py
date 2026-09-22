@@ -1,15 +1,18 @@
 from pathlib import Path
 
-from llm_client import CompletionRequest, LlmClient, ReplayProvider
+from llm_client import CompletionRequest, CompletionResult, LlmClient, ReplayProvider
 from llm_client.providers.opencode_cli import OpenCodeCLI
 from schema_validate import SchemaRegistry
 from secure_base import redact
+from test_kit import EvalCase, EvalDataset, run
 
 from sec_check.main import build_digest, load_prompt, render_prompt
 from sec_check.models import SecFindings
 
 MODEL = "opencode/big-pickle"
-CASSETTES = Path(__file__).resolve().parents[1] / "cassettes"
+ROOT = Path(__file__).resolve().parents[1]
+CASSETTES = ROOT / "cassettes"
+SCHEMA_ID = "sec-findings-v1"
 
 RAW = """diff --git a/cli.py b/cli.py
 +def run():
@@ -21,9 +24,10 @@ RAW = """diff --git a/cli.py b/cli.py
 
 
 def main() -> None:
-    sanitized = redact(RAW)
+    dataset = EvalDataset.from_jsonl(ROOT / "evals" / "sec-findings-generator.jsonl")
+
     registry = SchemaRegistry()
-    registry.register("sec-findings-v1", SecFindings)
+    registry.register(SCHEMA_ID, SecFindings)
     recorder = ReplayProvider(CASSETTES, record=True, inner=OpenCodeCLI(MODEL))
     prompt_id, prompt_version, _ = load_prompt()
     client = LlmClient(
@@ -32,19 +36,25 @@ def main() -> None:
         model_aliases={"fast": MODEL},
         retries=1,
         renderer=render_prompt,
-        validator=registry.make_validator("sec-findings-v1"),
+        validator=registry.make_validator(SCHEMA_ID),
     )
-    result = client.complete(
-        CompletionRequest(
-            prompt_id=prompt_id,
-            prompt_version=prompt_version,
-            variables={"redacted_text": sanitized.text, "digest": build_digest(sanitized.findings)},
-            model_alias="fast",
-            response_schema="sec-findings-v1",
-            tags=["record", "seed-week4"],
+
+    def judge(case: EvalCase) -> CompletionResult:
+        return client.complete(
+            CompletionRequest(
+                prompt_id=case.prompt_id,
+                prompt_version=case.prompt_version,
+                variables=case.input,
+                model_alias="fast",
+                response_schema=SCHEMA_ID,
+                tags=["record", "retrofit-week6"],
+            )
         )
-    )
-    print(f"validated={result.validation.ok} parsed={result.parsed}")
+
+    report = run(dataset, judge, mode="full", threshold=1.0)
+    print(f"grabadas {len(dataset.cases)} respuestas; pass={report.passed}/{report.total}")
+    for case_report in report.cases:
+        print(case_report.model_dump())
 
 
 if __name__ == "__main__":

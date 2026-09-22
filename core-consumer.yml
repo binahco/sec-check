@@ -7,12 +7,13 @@ reused_modules:
   - llm-client
   - schema-validate
   - secure-base
+  - test-kit
 
 new_surface:
   - escáner de secretos con redacción estructural antes del prompt
   - triaje de severidad/remediación vía LLM (salida validada)
   - prompt sec-findings-generator (frontmatter + render)
-  - evals/sec-findings-generator (seed)
+  - "evals/sec-findings-generator: 3 casos congelados (retrofit #0, sem 6)"
 
 estimated_new_surface: 30
 

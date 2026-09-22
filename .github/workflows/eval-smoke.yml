@@ -1,0 +1,15 @@
+name: eval-smoke
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  eval-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --frozen
+      - name: evals en verde (replay determinista, sin LLM — D4)
+        run: uv run pytest tests/test_replay.py -q
